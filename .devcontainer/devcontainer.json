@@ -1,5 +1,5 @@
 {
-  "name": "go-clean-arh-webapi",
+  "name": "go-gin-webapi",
   "dockerComposeFile": ["docker-compose.yml"],
   "service": "app",
   "context": "..",
