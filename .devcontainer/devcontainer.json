@@ -1,0 +1,29 @@
+{
+  "name": "go-clean-arh-webapi",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "app",
+  "context": "..",
+  "workspaceFolder": "/app",
+  "postCreateCommand": "go mod install",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "/bin/bash",
+        "go.toolsManagement.checkForUpdates": "off",
+        "go.useLanguageServer": true,
+        "gopls": {
+          "formatting.gofumpt": true
+        },
+        "git.openRepositoryInParentDirectories": true
+      },
+      "extensions": [
+        "golang.go",
+        "streetsidesoftware.code-spell-checker",
+        "bierner.markdown-mermaid",
+        "42Crunch.vscode-openapi"
+      ]
+    }
+  },
+  "remoteUser": "root",
+  "shutdownAction": "stopCompose"
+}

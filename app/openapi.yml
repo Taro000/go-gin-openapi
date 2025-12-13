@@ -1,0 +1,418 @@
+openapi: 3.0.0
+info:
+  title: "go-gin-webapi"
+  version: "1.0.0"
+  description: "アカウント登録機能が付いたTODOリストを作る。"
+servers:
+  - url: http://localhost:8080/api/v1
+paths:
+  /register:
+    post:
+      summary: "ユーザー登録"
+      description: "ユーザー登録を行う。"
+      requestBody:
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: "#/components/schemas/RegisterUserRequest"
+      responses:
+        "200":
+          description: "ユーザー登録成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterUserResponse"
+  /login:
+    post:
+      summary: "ログイン"
+      description: "ログインを行う。"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginUserRequest"
+      responses:
+        "200":
+          description: "ログイン成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginUserResponse"
+  /logout:
+    post:
+      security:
+        - bearer: []
+      summary: "ログアウト"
+      description: "ログアウトを行う。"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutUserRequest"
+      responses:
+        "200":
+          description: "ログアウト成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LogoutUserResponse"
+  /users/{user_id}:
+    get:
+      security:
+        - bearer: []
+      summary: "ユーザー詳細取得"
+      description: "ユーザー詳細を取得する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      responses:
+        "200":
+          description: "ユーザー詳細取得成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailResponse"
+    put:
+      security:
+        - bearer: []
+      summary: "ユーザー情報編集"
+      description: "ユーザー情報を編集する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: "ユーザー情報編集成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateUserResponse"
+  /users/{user_id}/todos:
+    post:
+      security:
+        - bearer: []
+      summary: "Todo作成"
+      description: "Todoを作成する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTodoRequest"
+      responses:
+        "200":
+          description: "Todo作成成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateTodoResponse"
+  /users/{user_id}/todos/{todo_id}:
+    get:
+      security:
+        - bearer: []
+      summary: "Todo詳細取得"
+      description: "Todo詳細を取得する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/todo_id"
+      responses:
+        "200":
+          description: "Todo詳細取得成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetTodoDetailResponse"
+    put:
+      security:
+        - bearer: []
+      summary: "Todo編集"
+      description: "Todoを編集する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/todo_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTodoRequest"
+      responses:
+        "200":
+          description: "Todo編集成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateTodoResponse"
+    delete:
+      security:
+        - bearer: []
+      summary: "Todo削除"
+      description: "Todoを削除する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/todo_id"
+      responses:
+        "200":
+          description: "Todo削除成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteTodoResponse"
+  /users/{user_id}/todos/{todo_id}/goodlucks:
+    post:
+      security:
+        - bearer: []
+      summary: "いいね作成"
+      description: "いいねを作成する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/todo_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGoodluckRequest"
+      responses:
+        "200":
+          description: "いいね作成成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateGoodluckResponse"
+    delete:
+      security:
+        - bearer: []
+      summary: "いいね削除"
+      description: "いいねを削除する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/todo_id"
+      responses:
+        "200":
+          description: "いいね削除成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteGoodluckResponse"
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      description: JWT Token Authentication
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    user_id:
+      name: user_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: char(28)
+    todo_id:
+      name: todo_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: char(36)
+  schemas:
+    RegisterUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        nickname:
+          type: string
+          minLength: 1
+          maxLength: 15
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 20
+    RegisterUserResponse:
+      type: object
+      properties:
+        uid:
+          type: string
+          format: char(28)
+        access_token:
+          type: string
+          format: jwt
+        refresh_token:
+          type: string
+          format: jwt
+    LoginUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 20
+    LoginUserResponse:
+      type: object
+      properties:
+        uid:
+          type: string
+          format: char(28)
+        access_token:
+          type: string
+          format: jwt
+        refresh_token:
+          type: string
+          format: jwt
+    LogoutUserRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: char(28)
+    LogoutUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    GetUserDetailResponse:
+      type: object
+      properties:
+        nickname:
+          type: string
+        email:
+          type: string
+          format: email
+    UpdateUserRequest:
+      type: object
+      properties:
+        nickname:
+          type: string
+          minLength: 1
+          maxLength: 15
+        email:
+          type: string
+          format: email
+    UpdateUserResponse:
+      type: object
+      properties:
+        nickname:
+          type: string
+        email:
+          type: string
+          format: email
+    CreateTodoRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 30
+        content:
+          type: string
+          maxLength: 1000
+        status:
+          type: string
+          format: char(2)
+        due_datetime:
+          type: string
+          format: date-time
+    CreateTodoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: char(36)
+    UpdateTodoRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 30
+        content:
+          type: string
+          maxLength: 1000
+        status:
+          type: string
+          format: char(2)
+        due_datetime:
+          type: string
+          format: date-time
+    UpdateTodoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: char(36)
+    DeleteTodoResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    GetTodoDetailResponse:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 30
+        content:
+          type: string
+          maxLength: 1000
+        status:
+          type: string
+          format: char(2)
+        due_datetime:
+          type: string
+          format: date-time
+    GetTodoListResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+            format: char(36)
+          title:
+            type: string
+            minLength: 1
+            maxLength: 30
+          status:
+            type: string
+            format: char(2)
+          due_datetime:
+            type: string
+            format: date-time
+    CreateGoodluckRequest:
+      type: object
+      properties:
+        todo_id:
+          type: string
+          format: char(36)
+        user_id:
+          type: string
+          format: char(28)
+    CreateGoodluckResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    DeleteGoodluckResponse:
+      type: object
+      properties:
+        message:
+          type: string
