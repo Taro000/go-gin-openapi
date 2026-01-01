@@ -1,4 +1,4 @@
-package: main
+package: schemas
 generate:
   models: true
   embedded-spec: true

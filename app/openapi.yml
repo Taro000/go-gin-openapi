@@ -23,6 +23,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RegisterUserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /login:
     post:
       summary: "ログイン"
@@ -40,6 +44,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LoginUserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /logout:
     post:
       security:
@@ -59,6 +67,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LogoutUserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /users/{user_id}:
     get:
       security:
@@ -74,6 +88,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetUserDetailResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     put:
       security:
         - bearer: []
@@ -94,7 +118,41 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UpdateUserResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /users/{user_id}/todos:
+    get:
+      security:
+        - bearer: []
+      summary: "Todo一覧取得"
+      description: "Todo一覧を取得する。"
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+      responses:
+        "200":
+          description: "Todo一覧取得成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetTodoListResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     post:
       security:
         - bearer: []
@@ -115,6 +173,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateTodoResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /users/{user_id}/todos/{todo_id}:
     get:
       security:
@@ -131,6 +199,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GetTodoDetailResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     put:
       security:
         - bearer: []
@@ -152,6 +230,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UpdateTodoResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
       security:
         - bearer: []
@@ -167,6 +255,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteTodoResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /users/{user_id}/todos/{todo_id}/goodlucks:
     post:
       security:
@@ -189,6 +287,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateGoodluckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
       security:
         - bearer: []
@@ -204,6 +312,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DeleteGoodluckResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 components:
   securitySchemes:
     bearer:
@@ -416,3 +534,59 @@ components:
       properties:
         message:
           type: string
+  responses:
+    BadRequest:
+      description: "Bad Request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: "invalid request body"
+    Unauthorized:
+      description: "Unauthorized"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: "unauthorized"
+    Forbidden:
+      description: "Forbidden"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: "forbidden"
+    NotFound:
+      description: "Not Found"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: "not found"
+    InternalServerError:
+      description: "Internal Server Error"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+            example:
+              error: "internal server error"
