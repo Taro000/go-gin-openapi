@@ -35,7 +35,7 @@ func (a *API) PostUsersUserIdTodosTodoIdGoodlucks(c *gin.Context, userId schemas
 		return
 	}
 	msg := "goodluck created"
-	c.JSON(200, schemas.CreateGoodluckResponse{Message: &msg})
+	c.JSON(201, schemas.CreateGoodluckResponse{Message: &msg})
 }
 
 func (a *API) DeleteUsersUserIdTodosTodoIdGoodlucks(c *gin.Context, userId schemas.UserId, todoId schemas.TodoId) {
@@ -50,8 +50,7 @@ func (a *API) DeleteUsersUserIdTodosTodoIdGoodlucks(c *gin.Context, userId schem
 		internalErr(c, err)
 		return
 	}
-	msg := "goodluck deleted"
-	c.JSON(200, schemas.DeleteGoodluckResponse{Message: &msg})
+	c.Status(204)
 }
 
 

@@ -14,7 +14,6 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
@@ -25,6 +24,14 @@ import (
 
 const (
 	BearerScopes = "bearer.Scopes"
+)
+
+// Defines values for TodoStatus.
+const (
+	Empty TodoStatus = "未着手"
+	N1    TodoStatus = "進行中"
+	N2    TodoStatus = "完了"
+	N3    TodoStatus = "保留"
 )
 
 // CreateGoodluckRequest defines model for CreateGoodluckRequest.
@@ -40,10 +47,14 @@ type CreateGoodluckResponse struct {
 
 // CreateTodoRequest defines model for CreateTodoRequest.
 type CreateTodoRequest struct {
-	Content     *string    `json:"content,omitempty"`
-	DueDatetime *time.Time `json:"due_datetime,omitempty"`
-	Status      *string    `json:"status,omitempty"`
-	Title       *string    `json:"title,omitempty"`
+	Content *string `json:"content,omitempty"`
+
+	// DueDatetime 期限日時（yyyy/mm/dd hh:mm）
+	DueDatetime *TodoDueDatetime `json:"due_datetime,omitempty"`
+
+	// Status Todoのステータス
+	Status *TodoStatus `json:"status,omitempty"`
+	Title  *string     `json:"title,omitempty"`
 }
 
 // CreateTodoResponse defines model for CreateTodoResponse.
@@ -51,30 +62,27 @@ type CreateTodoResponse struct {
 	Id *string `json:"id,omitempty"`
 }
 
-// DeleteGoodluckResponse defines model for DeleteGoodluckResponse.
-type DeleteGoodluckResponse struct {
-	Message *string `json:"message,omitempty"`
-}
-
-// DeleteTodoResponse defines model for DeleteTodoResponse.
-type DeleteTodoResponse struct {
-	Message *string `json:"message,omitempty"`
-}
-
 // GetTodoDetailResponse defines model for GetTodoDetailResponse.
 type GetTodoDetailResponse struct {
-	Content     *string    `json:"content,omitempty"`
-	DueDatetime *time.Time `json:"due_datetime,omitempty"`
-	Status      *string    `json:"status,omitempty"`
-	Title       *string    `json:"title,omitempty"`
+	Content *string `json:"content,omitempty"`
+
+	// DueDatetime 期限日時（yyyy/mm/dd hh:mm）
+	DueDatetime *TodoDueDatetime `json:"due_datetime,omitempty"`
+
+	// Status Todoのステータス
+	Status *TodoStatus `json:"status,omitempty"`
+	Title  *string     `json:"title,omitempty"`
 }
 
 // GetTodoListResponse defines model for GetTodoListResponse.
 type GetTodoListResponse = []struct {
-	DueDatetime *time.Time `json:"due_datetime,omitempty"`
-	Id          *string    `json:"id,omitempty"`
-	Status      *string    `json:"status,omitempty"`
-	Title       *string    `json:"title,omitempty"`
+	// DueDatetime 期限日時（yyyy/mm/dd hh:mm）
+	DueDatetime *TodoDueDatetime `json:"due_datetime,omitempty"`
+	Id          *string          `json:"id,omitempty"`
+
+	// Status Todoのステータス
+	Status *TodoStatus `json:"status,omitempty"`
+	Title  *string     `json:"title,omitempty"`
 }
 
 // GetUserDetailResponse defines model for GetUserDetailResponse.
@@ -120,12 +128,22 @@ type RegisterUserResponse struct {
 	Uid          *string `json:"uid,omitempty"`
 }
 
+// TodoDueDatetime 期限日時（yyyy/mm/dd hh:mm）
+type TodoDueDatetime = string
+
+// TodoStatus Todoのステータス
+type TodoStatus string
+
 // UpdateTodoRequest defines model for UpdateTodoRequest.
 type UpdateTodoRequest struct {
-	Content     *string    `json:"content,omitempty"`
-	DueDatetime *time.Time `json:"due_datetime,omitempty"`
-	Status      *string    `json:"status,omitempty"`
-	Title       *string    `json:"title,omitempty"`
+	Content *string `json:"content,omitempty"`
+
+	// DueDatetime 期限日時（yyyy/mm/dd hh:mm）
+	DueDatetime *TodoDueDatetime `json:"due_datetime,omitempty"`
+
+	// Status Todoのステータス
+	Status *TodoStatus `json:"status,omitempty"`
+	Title  *string     `json:"title,omitempty"`
 }
 
 // UpdateTodoResponse defines model for UpdateTodoResponse.
@@ -635,11 +653,11 @@ type PostLoginResponseObject interface {
 	VisitPostLoginResponse(w http.ResponseWriter) error
 }
 
-type PostLogin200JSONResponse LoginUserResponse
+type PostLogin201JSONResponse LoginUserResponse
 
-func (response PostLogin200JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+func (response PostLogin201JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -672,11 +690,11 @@ type PostLogoutResponseObject interface {
 	VisitPostLogoutResponse(w http.ResponseWriter) error
 }
 
-type PostLogout200JSONResponse LogoutUserResponse
+type PostLogout201JSONResponse LogoutUserResponse
 
-func (response PostLogout200JSONResponse) VisitPostLogoutResponse(w http.ResponseWriter) error {
+func (response PostLogout201JSONResponse) VisitPostLogoutResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -718,11 +736,11 @@ type PostRegisterResponseObject interface {
 	VisitPostRegisterResponse(w http.ResponseWriter) error
 }
 
-type PostRegister200JSONResponse RegisterUserResponse
+type PostRegister201JSONResponse RegisterUserResponse
 
-func (response PostRegister200JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+func (response PostRegister201JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -949,11 +967,11 @@ type PostUsersUserIdTodosResponseObject interface {
 	VisitPostUsersUserIdTodosResponse(w http.ResponseWriter) error
 }
 
-type PostUsersUserIdTodos200JSONResponse CreateTodoResponse
+type PostUsersUserIdTodos201JSONResponse CreateTodoResponse
 
-func (response PostUsersUserIdTodos200JSONResponse) VisitPostUsersUserIdTodosResponse(w http.ResponseWriter) error {
+func (response PostUsersUserIdTodos201JSONResponse) VisitPostUsersUserIdTodosResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1014,13 +1032,12 @@ type DeleteUsersUserIdTodosTodoIdResponseObject interface {
 	VisitDeleteUsersUserIdTodosTodoIdResponse(w http.ResponseWriter) error
 }
 
-type DeleteUsersUserIdTodosTodoId200JSONResponse DeleteTodoResponse
+type DeleteUsersUserIdTodosTodoId204Response struct {
+}
 
-func (response DeleteUsersUserIdTodosTodoId200JSONResponse) VisitDeleteUsersUserIdTodosTodoIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
+func (response DeleteUsersUserIdTodosTodoId204Response) VisitDeleteUsersUserIdTodosTodoIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
 }
 
 type DeleteUsersUserIdTodosTodoId400JSONResponse struct{ BadRequestJSONResponse }
@@ -1210,13 +1227,12 @@ type DeleteUsersUserIdTodosTodoIdGoodlucksResponseObject interface {
 	VisitDeleteUsersUserIdTodosTodoIdGoodlucksResponse(w http.ResponseWriter) error
 }
 
-type DeleteUsersUserIdTodosTodoIdGoodlucks200JSONResponse DeleteGoodluckResponse
+type DeleteUsersUserIdTodosTodoIdGoodlucks204Response struct {
+}
 
-func (response DeleteUsersUserIdTodosTodoIdGoodlucks200JSONResponse) VisitDeleteUsersUserIdTodosTodoIdGoodlucksResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
+func (response DeleteUsersUserIdTodosTodoIdGoodlucks204Response) VisitDeleteUsersUserIdTodosTodoIdGoodlucksResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
 }
 
 type DeleteUsersUserIdTodosTodoIdGoodlucks400JSONResponse struct{ BadRequestJSONResponse }
@@ -1276,11 +1292,11 @@ type PostUsersUserIdTodosTodoIdGoodlucksResponseObject interface {
 	VisitPostUsersUserIdTodosTodoIdGoodlucksResponse(w http.ResponseWriter) error
 }
 
-type PostUsersUserIdTodosTodoIdGoodlucks200JSONResponse CreateGoodluckResponse
+type PostUsersUserIdTodosTodoIdGoodlucks201JSONResponse CreateGoodluckResponse
 
-func (response PostUsersUserIdTodosTodoIdGoodlucks200JSONResponse) VisitPostUsersUserIdTodosTodoIdGoodlucksResponse(w http.ResponseWriter) error {
+func (response PostUsersUserIdTodosTodoIdGoodlucks201JSONResponse) VisitPostUsersUserIdTodosTodoIdGoodlucksResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1766,33 +1782,36 @@ func (sh *strictHandler) PostUsersUserIdTodosTodoIdGoodlucks(ctx *gin.Context, u
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"3VoxAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

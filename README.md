@@ -31,7 +31,7 @@
 erDiagram
     User {
         CHAR(28) uid PK "ユーザーID"
-        VARCHAER(15) nickname "ニックネーム"
+        VARCHAER(20) nickname "ニックネーム"
         VARCHAR(255) email "メールアドレス"
     }
 

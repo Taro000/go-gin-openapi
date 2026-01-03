@@ -20,6 +20,10 @@ func (a *API) PostRegister(c *gin.Context) {
 		badRequest(c, "email/password/nickname are required")
 		return
 	}
+	if runeLen(strings.TrimSpace(*req.Nickname)) > 20 {
+		badRequest(c, "nickname must be <= 20 chars")
+		return
+	}
 
 	uid, idToken, refreshToken, err := a.idtk.SignUp(c.Request.Context(), string(*req.Email), *req.Password)
 	if err != nil {
@@ -41,7 +45,7 @@ func (a *API) PostRegister(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, schemas.RegisterUserResponse{
+	c.JSON(201, schemas.RegisterUserResponse{
 		Uid:          strPtr(uid),
 		AccessToken:  strPtr(idToken),
 		RefreshToken: strPtr(refreshToken),
@@ -75,7 +79,7 @@ func (a *API) PostLogin(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, schemas.LoginUserResponse{
+	c.JSON(201, schemas.LoginUserResponse{
 		Uid:          strPtr(uid),
 		AccessToken:  strPtr(idToken),
 		RefreshToken: strPtr(refreshToken),
@@ -101,7 +105,7 @@ func (a *API) PostLogout(c *gin.Context) {
 	}
 
 	msg := "logged out"
-	c.JSON(200, schemas.LogoutUserResponse{Message: &msg})
+	c.JSON(201, schemas.LogoutUserResponse{Message: &msg})
 }
 
 

@@ -17,7 +17,7 @@ paths:
             schema:
               $ref: "#/components/schemas/RegisterUserRequest"
       responses:
-        "200":
+        "201":
           description: "ユーザー登録成功"
           content:
             application/json:
@@ -38,7 +38,7 @@ paths:
             schema:
               $ref: "#/components/schemas/LoginUserRequest"
       responses:
-        "200":
+        "201":
           description: "ログイン成功"
           content:
             application/json:
@@ -61,7 +61,7 @@ paths:
             schema:
               $ref: "#/components/schemas/LogoutUserRequest"
       responses:
-        "200":
+        "201":
           description: "ログアウト成功"
           content:
             application/json:
@@ -167,7 +167,7 @@ paths:
             schema:
               $ref: "#/components/schemas/CreateTodoRequest"
       responses:
-        "200":
+        "201":
           description: "Todo作成成功"
           content:
             application/json:
@@ -249,12 +249,8 @@ paths:
         - $ref: "#/components/parameters/user_id"
         - $ref: "#/components/parameters/todo_id"
       responses:
-        "200":
+        "204":
           description: "Todo削除成功"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteTodoResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -281,7 +277,7 @@ paths:
             schema:
               $ref: "#/components/schemas/CreateGoodluckRequest"
       responses:
-        "200":
+        "201":
           description: "いいね作成成功"
           content:
             application/json:
@@ -306,12 +302,8 @@ paths:
         - $ref: "#/components/parameters/user_id"
         - $ref: "#/components/parameters/todo_id"
       responses:
-        "200":
+        "204":
           description: "いいね削除成功"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteGoodluckResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -354,7 +346,7 @@ components:
         nickname:
           type: string
           minLength: 1
-          maxLength: 15
+          maxLength: 20
         password:
           type: string
           format: password
@@ -420,7 +412,7 @@ components:
         nickname:
           type: string
           minLength: 1
-          maxLength: 15
+          maxLength: 20
         email:
           type: string
           format: email
@@ -432,6 +424,19 @@ components:
         email:
           type: string
           format: email
+    TodoStatus:
+      type: string
+      description: "Todoのステータス"
+      enum:
+        - 未着手
+        - 進行中
+        - 完了
+        - 保留
+    TodoDueDatetime:
+      type: string
+      description: "期限日時（yyyy/mm/dd hh:mm）"
+      pattern: '^\d{4}/\d{2}/\d{2} \d{2}:\d{2}$'
+      example: "2026/01/03 09:30"
     CreateTodoRequest:
       type: object
       properties:
@@ -443,11 +448,9 @@ components:
           type: string
           maxLength: 1000
         status:
-          type: string
-          format: char(2)
+          $ref: "#/components/schemas/TodoStatus"
         due_datetime:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/TodoDueDatetime"
     CreateTodoResponse:
       type: object
       properties:
@@ -465,22 +468,15 @@ components:
           type: string
           maxLength: 1000
         status:
-          type: string
-          format: char(2)
+          $ref: "#/components/schemas/TodoStatus"
         due_datetime:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/TodoDueDatetime"
     UpdateTodoResponse:
       type: object
       properties:
         id:
           type: string
           format: char(36)
-    DeleteTodoResponse:
-      type: object
-      properties:
-        message:
-          type: string
     GetTodoDetailResponse:
       type: object
       properties:
@@ -492,11 +488,9 @@ components:
           type: string
           maxLength: 1000
         status:
-          type: string
-          format: char(2)
+          $ref: "#/components/schemas/TodoStatus"
         due_datetime:
-          type: string
-          format: date-time
+          $ref: "#/components/schemas/TodoDueDatetime"
     GetTodoListResponse:
       type: array
       items:
@@ -510,11 +504,9 @@ components:
             minLength: 1
             maxLength: 30
           status:
-            type: string
-            format: char(2)
+            $ref: "#/components/schemas/TodoStatus"
           due_datetime:
-            type: string
-            format: date-time
+            $ref: "#/components/schemas/TodoDueDatetime"
     CreateGoodluckRequest:
       type: object
       properties:
@@ -525,11 +517,6 @@ components:
           type: string
           format: char(28)
     CreateGoodluckResponse:
-      type: object
-      properties:
-        message:
-          type: string
-    DeleteGoodluckResponse:
       type: object
       properties:
         message:

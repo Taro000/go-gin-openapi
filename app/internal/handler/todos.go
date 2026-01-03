@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -27,16 +28,23 @@ func (a *API) GetUsersUserIdTodos(c *gin.Context, userId schemas.UserId) {
 	for _, t := range todos {
 		id := t.ID
 		title := t.Title
-		status := t.Status
-		var due *time.Time
+		apiStatus, ok := todoCodeToStatus(t.Status)
+		if !ok {
+			internalErr(c, errors.New("invalid todo status code in db"))
+			return
+		}
+		status := apiStatus
+
+		var due *schemas.TodoDueDatetime
 		if t.DueDatetime != nil {
-			due = t.DueDatetime
+			s := formatTodoDueDatetime(*t.DueDatetime)
+			due = &s
 		}
 		out = append(out, struct {
-			DueDatetime *time.Time `json:"due_datetime,omitempty"`
-			Id          *string    `json:"id,omitempty"`
-			Status      *string    `json:"status,omitempty"`
-			Title       *string    `json:"title,omitempty"`
+			DueDatetime *schemas.TodoDueDatetime `json:"due_datetime,omitempty"`
+			Id          *string                `json:"id,omitempty"`
+			Status      *schemas.TodoStatus    `json:"status,omitempty"`
+			Title       *string                `json:"title,omitempty"`
 		}{
 			DueDatetime: due,
 			Id:          &id,
@@ -60,11 +68,38 @@ func (a *API) PostUsersUserIdTodos(c *gin.Context, userId schemas.UserId) {
 		badRequest(c, "title/content are required")
 		return
 	}
-	status := "00"
-	if req.Status != nil && strings.TrimSpace(*req.Status) != "" {
-		status = *req.Status
+
+	title := strings.TrimSpace(*req.Title)
+	if runeLen(title) > 30 {
+		badRequest(c, "title must be <= 30 chars")
+		return
 	}
-	if err := a.repos.Statuses.Ensure(c.Request.Context(), status); err != nil {
+	if runeLen(*req.Content) > 1000 {
+		badRequest(c, "content must be <= 1000 chars")
+		return
+	}
+
+	apiStatus := schemas.TodoStatus("未着手")
+	if req.Status != nil && strings.TrimSpace(string(*req.Status)) != "" {
+		apiStatus = *req.Status
+	}
+	statusCode, ok := todoStatusToCode(apiStatus)
+	if !ok {
+		badRequest(c, "status must be one of: 未着手, 進行中, 完了, 保留")
+		return
+	}
+
+	var due *time.Time
+	if req.DueDatetime != nil && strings.TrimSpace(string(*req.DueDatetime)) != "" {
+		t, err := parseTodoDueDatetime(*req.DueDatetime)
+		if err != nil {
+			badRequest(c, err.Error())
+			return
+		}
+		due = &t
+	}
+
+	if err := a.repos.Statuses.Ensure(c.Request.Context(), statusCode); err != nil {
 		internalErr(c, err)
 		return
 	}
@@ -73,16 +108,16 @@ func (a *API) PostUsersUserIdTodos(c *gin.Context, userId schemas.UserId) {
 	t := repo.Todo{
 		ID:          id,
 		Owner:       string(userId),
-		Status:      status,
-		Title:       *req.Title,
+		Status:      statusCode,
+		Title:       title,
 		Content:     *req.Content,
-		DueDatetime: req.DueDatetime,
+		DueDatetime: due,
 	}
 	if err := a.repos.Todos.Create(c.Request.Context(), t); err != nil {
 		internalErr(c, err)
 		return
 	}
-	c.JSON(200, schemas.CreateTodoResponse{Id: &id})
+	c.JSON(201, schemas.CreateTodoResponse{Id: &id})
 }
 
 func (a *API) GetUsersUserIdTodosTodoId(c *gin.Context, userId schemas.UserId, todoId schemas.TodoId) {
@@ -98,11 +133,23 @@ func (a *API) GetUsersUserIdTodosTodoId(c *gin.Context, userId schemas.UserId, t
 		internalErr(c, err)
 		return
 	}
+
+	apiStatus, ok := todoCodeToStatus(t.Status)
+	if !ok {
+		internalErr(c, errors.New("invalid todo status code in db"))
+		return
+	}
+	var due *schemas.TodoDueDatetime
+	if t.DueDatetime != nil {
+		s := formatTodoDueDatetime(*t.DueDatetime)
+		due = &s
+	}
+
 	c.JSON(200, schemas.GetTodoDetailResponse{
 		Title:       &t.Title,
 		Content:     &t.Content,
-		Status:      &t.Status,
-		DueDatetime: t.DueDatetime,
+		Status:      &apiStatus,
+		DueDatetime: due,
 	})
 }
 
@@ -115,13 +162,51 @@ func (a *API) PutUsersUserIdTodosTodoId(c *gin.Context, userId schemas.UserId, t
 		badRequest(c, "invalid json")
 		return
 	}
-	if req.Status != nil && strings.TrimSpace(*req.Status) != "" {
-		if err := a.repos.Statuses.Ensure(c.Request.Context(), *req.Status); err != nil {
+
+	var title *string
+	if req.Title != nil {
+		s := strings.TrimSpace(*req.Title)
+		if s == "" {
+			badRequest(c, "title must not be empty")
+			return
+		}
+		if runeLen(s) > 30 {
+			badRequest(c, "title must be <= 30 chars")
+			return
+		}
+		title = &s
+	}
+
+	if req.Content != nil && runeLen(*req.Content) > 1000 {
+		badRequest(c, "content must be <= 1000 chars")
+		return
+	}
+
+	var status *string
+	if req.Status != nil && strings.TrimSpace(string(*req.Status)) != "" {
+		code, ok := todoStatusToCode(*req.Status)
+		if !ok {
+			badRequest(c, "status must be one of: 未着手, 進行中, 完了, 保留")
+			return
+		}
+		if err := a.repos.Statuses.Ensure(c.Request.Context(), code); err != nil {
 			internalErr(c, err)
 			return
 		}
+		status = &code
 	}
-	if err := a.repos.Todos.UpdateByIDOwner(c.Request.Context(), string(todoId), string(userId), req.Title, req.Content, req.Status, req.DueDatetime); err != nil {
+
+	var dueDatetime *time.Time
+	if req.DueDatetime != nil && strings.TrimSpace(string(*req.DueDatetime)) != "" {
+		t, err := parseTodoDueDatetime(*req.DueDatetime)
+		if err != nil {
+			badRequest(c, err.Error())
+			return
+		}
+		dueDatetime = &t
+	}
+
+	if err := a.repos.Todos.UpdateByIDOwner(c.Request.Context(), string(todoId), string(userId), title, req.Content, status, dueDatetime); err != nil {
 		if err == sql.ErrNoRows {
 			notFound(c)
 			return
@@ -145,8 +230,7 @@ func (a *API) DeleteUsersUserIdTodosTodoId(c *gin.Context, userId schemas.UserId
 		internalErr(c, err)
 		return
 	}
-	msg := "deleted"
-	c.JSON(200, schemas.DeleteTodoResponse{Message: &msg})
+	c.Status(204)
 }
 
 

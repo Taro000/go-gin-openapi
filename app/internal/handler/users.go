@@ -2,6 +2,7 @@ package handler
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -38,6 +39,19 @@ func (a *API) PutUsersUserId(c *gin.Context, userId schemas.UserId) {
 	if err := c.ShouldBindJSON(&req); err != nil {
 		badRequest(c, "invalid json")
 		return
+	}
+
+	if req.Nickname != nil {
+		n := strings.TrimSpace(*req.Nickname)
+		if n == "" {
+			badRequest(c, "nickname must not be empty")
+			return
+		}
+		if runeLen(n) > 20 {
+			badRequest(c, "nickname must be <= 20 chars")
+			return
+		}
+		req.Nickname = &n
 	}
 
 	var emailStr *string

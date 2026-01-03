@@ -2,7 +2,7 @@
 
 CREATE TABLE IF NOT EXISTS `users` (
   `uid` CHAR(28) NOT NULL COMMENT 'ユーザーID',
-  `nickname` VARCHAR(15) NOT NULL COMMENT 'ニックネーム',
+  `nickname` VARCHAR(20) NOT NULL COMMENT 'ニックネーム',
   `email` VARCHAR(255) NOT NULL COMMENT 'メールアドレス',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `uk_users_email` (`email`)
