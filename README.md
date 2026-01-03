@@ -1,6 +1,6 @@
 # go-gin-webapi
 
-アカウント登録機能が付いたTODOリストを作る。
+アカウント登録機能が付いた TODO リストを作る。
 
 ## 技術スタック
 
@@ -17,11 +17,11 @@
 - ログアウト
 - ユーザー詳細取得
 - ユーザー情報編集
-- Todo作成
-- Todo編集
-- Todo削除
-- Todo詳細取得
-- Todo一覧取得
+- Todo 作成
+- Todo 編集
+- Todo 削除
+- Todo 詳細取得
+- Todo 一覧取得
 - いいね作成
 - いいね削除
 
@@ -61,9 +61,22 @@ erDiagram
     Todo ||--o{ Goodluck :"1個のTodoは<br>N回いいねをされ得る。"
 ```
 
+## データについて
+
+### TODO
+
+- タイトル：30 字以内
+- 内容：1000 文字以内
+- ステータス：未着手・進行中・完了・保留
+- 期限：yyyy/mm/dd hh:mm
+
+### アカウント
+
+- ニックネーム：20 字以内
+
 ## ローカル動作確認
 
-APIのベースURLは `http://localhost:8080/api/v1`
+API のベース URL は `http://localhost:8080/api/v1`
 
 ### 環境変数（`app/.env`）
 
@@ -93,9 +106,9 @@ AUTH_BYPASS=true
 # FIREBASE_AUTH_EMULATOR_HOST=
 ```
 
-### 1) DBを起動（Docker）
+### 1) DB を起動（Docker）
 
-リポジトリルートで以下を実行します（MySQLのみ起動）:
+リポジトリルートで以下を実行します（MySQL のみ起動）:
 
 ```bash
 docker compose -f .devcontainer/docker-compose.yml up -d db
@@ -103,7 +116,7 @@ docker compose -f .devcontainer/docker-compose.yml up -d db
 
 初回は `.devcontainer/db/initdb.d/init_table.sql` が自動で適用され、テーブルが作られます。
 
-### 2) APIサーバを起動（Goをローカルで実行）
+### 2) API サーバを起動（Go をローカルで実行）
 
 別ターミナルで以下を実行します:
 
@@ -111,10 +124,10 @@ docker compose -f .devcontainer/docker-compose.yml up -d db
 make dev
 ```
 
-### 3) 疎通確認（Firebase無し: `AUTH_BYPASS=true`）
+### 3) 疎通確認（Firebase 無し: `AUTH_BYPASS=true`）
 
-`AUTH_BYPASS=true` の場合、Bearerの代わりに `X-User-Id` ヘッダで認可を通せます。
-テスト用の `uid` は **28文字**にしてください（DB定義: `CHAR(28)`）。
+`AUTH_BYPASS=true` の場合、Bearer の代わりに `X-User-Id` ヘッダで認可を通せます。
+テスト用の `uid` は **28 文字**にしてください（DB 定義: `CHAR(28)`）。
 
 ```bash
 UID=testuser0000000000000000000000
@@ -134,16 +147,16 @@ curl -sS "http://localhost:8080/api/v1/users/${UID}/todos" \
   -H "X-User-Id: ${UID}"
 ```
 
-### 4) 疎通確認（Firebaseあり: register/login）
+### 4) 疎通確認（Firebase あり: register/login）
 
 `/register` と `/login` を使う場合は、少なくとも `FIREBASE_API_KEY` が必要です。
-Bearer認証（`/users/...` など）や `/logout` の revoke を正しく動かすには、Firebase Admin SDK の設定も必要です。
+Bearer 認証（`/users/...` など）や `/logout` の revoke を正しく動かすには、Firebase Admin SDK の設定も必要です。
 
 - **必要**: `FIREBASE_API_KEY`
 - **推奨**: `FIREBASE_PROJECT_ID` と、以下いずれか
-  - `FIREBASE_CREDENTIALS_FILE`（サービスアカウントJSONへのパス）
-  - `FIREBASE_SERVICE_ACCOUNT_JSON`（サービスアカウントJSON文字列）
+  - `FIREBASE_CREDENTIALS_FILE`（サービスアカウント JSON へのパス）
+  - `FIREBASE_SERVICE_ACCOUNT_JSON`（サービスアカウント JSON 文字列）
 
 ### Swagger
 
-起動後、`/swagger.json` で生成されたOpenAPIのSwagger JSONを確認できます。
+起動後、`/swagger.json` で生成された OpenAPI の Swagger JSON を確認できます。
